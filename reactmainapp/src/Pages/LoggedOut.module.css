@@ -1,0 +1,40 @@
+.wrapper {
+    position: relative;
+    top: 50%;
+    margin: auto;
+    width: 50%;
+    text-align: center;
+    padding: 10px;
+  }
+.single_input {
+  text-indent:5px;
+  padding:8px;
+  margin: 12px 10px 12px 10px;
+  border-color: rgb(181, 181, 182);
+  border-style: solid;
+  width:29.5%;
+}
+
+.align_inputs {
+    width:64%
+}
+
+.btn {
+  color: black;
+  margin-top:2px;
+  border: None;
+  padding: 12px 25px 12px 25px;
+  border-radius: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: box-shadow 0.15s, opacity 0.15;
+  background-color:darkgrey
+}
+.btn:hover {
+  box-shadow: 1px 3px 3px rgba(0, 0, 0, 0.15);
+  background-color:rgb(160, 160, 160)
+}
+
+.btn:active {
+  background-color: rgb(133, 133, 133)
+}
