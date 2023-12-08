@@ -22,3 +22,4 @@ class UserFollowerSerializer(serializers.ModelSerializer):
         model = UserFollower
         fields = '__all__'
 
+

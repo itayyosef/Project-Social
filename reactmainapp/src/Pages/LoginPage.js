@@ -2,9 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styles from './LoggedOut.module.css';
-import Cookies from 'js-cookie';
 
 function LoginPage() {
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
   const navigate = useNavigate();
 
   const [formData, setFormData] = React.useState({
@@ -17,22 +22,27 @@ function LoginPage() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    axios
-      .post('http://localhost:8000/login/', formData)
-      .then((response) => {
-        const token = response.data.token;
+    try {
+      const response = await axios.post('http://localhost:8000/login/', formData, {
+    withCredentials: true,
+    headers: {
+    'X-CSRFToken': getCookie('csrftoken'),
+    },
+    });
+      const sessionID = response.data.session_id;
+      const csrfToken = response.data.csrftoken;
 
-        // Save the token as a cookie with an expiration time (e.g., 1 day)
-        Cookies.set('token', token, { expires: 1 });
+      // Save session ID and CSRF token as cookies using document.cookie
+      document.cookie = `sessionID=${sessionID}; path=/`;
+      document.cookie = `csrftoken=${csrfToken}; path=/`;
 
-        navigate('/');
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+      navigate('/');
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   return (

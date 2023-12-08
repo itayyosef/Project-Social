@@ -7,7 +7,11 @@ from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate, login, logout
-from rest_framework.authtoken.models import Token
+from django.middleware.csrf import get_token
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import permissions
+
+
 
 # Create your views here.
 
@@ -72,6 +76,7 @@ def update_user(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CustomUserLoginView(APIView):
+    @csrf_exempt
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -83,22 +88,20 @@ class CustomUserLoginView(APIView):
             user.save()  # Save the user instance to persist the status change
 
             login(request, user)
-            # Check if an existing token exists for the user
-            existing_token = Token.objects.filter(user=user)
 
-            if existing_token:
-                # Delete the existing token
-                existing_token.delete()
+            # Set user-related data in the session
+            request.session['user_id'] = user.id
 
-            # Create a new token for the user
-            token = Token.objects.create(user=user)
-            token.save()
+            # Manually include CSRF token in the response
+            csrf_token = get_token(request)
 
-            # Return the token along with the user data
+            # Serialize user data if needed
             serializer = CustomUserSerializer(user)
+
             return Response({
-                "token": token.key,
-                "user": serializer.data
+                "session_id": request.session.session_key,
+                "user": serializer.data,
+                "csrftoken": csrf_token
             })
         else:
             return Response(
@@ -120,3 +123,4 @@ class CustomLogoutView(APIView):
             return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'User not logged in'}, status=status.HTTP_400_BAD_REQUEST)
+    
